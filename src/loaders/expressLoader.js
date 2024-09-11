@@ -14,25 +14,26 @@ module.exports = (autocodeRoutes) => {
   // set log request
   app.use(morgan("dev"));
 
-  // set security HTTP headers
-  app.use(helmet());
-
   const cspConfig = {
     directives: {
-      defaultSrc: ["'self'", "*"], // Allow everything for default sources
-      scriptSrc: ["'self'",  "'unsafe-inline'", "'unsafe-eval'", "*"], // Allow scripts from self, and all
-      styleSrc: ["'self'", "'unsafe-inline'", "*"], // Allow styles from self and all
-      imgSrc: ["'self'", "*", "data:"], // Allow images from all sources and inline data URIs
-      connectSrc: ["'self'", "*"], // Allow connections to all domains
-      fontSrc: ["'self'", "*"], // Allow fonts from all sources
+      defaultSrc: ["'self'", "https:"], // Allow HTTPS sources
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:"], // Allow scripts from HTTPS sources
+      styleSrc: ["'self'", "'unsafe-inline'", "https:"], // Allow styles from HTTPS sources
+      imgSrc: ["'self'", "https:", "data:"], // Allow images from HTTPS sources and inline data URIs
+      connectSrc: ["'self'", "https:"], // Allow connections to HTTPS domains
+      fontSrc: ["'self'", "https:"], // Allow fonts from HTTPS sources
       objectSrc: ["'none'"], // Disable objects (Flash, etc.), as this is rarely needed
       upgradeInsecureRequests: [], // Automatically upgrade HTTP to HTTPS
     },
-  
   };
 
-  // Override CSP directive settings if needed
-  app.use(helmet.contentSecurityPolicy(cspConfig));
+  app.use(
+    helmet({
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: false,
+      contentSecurityPolicy: cspConfig,
+    })
+  );
 
   // parse json request body
   app.use(express.json());
@@ -40,18 +41,37 @@ module.exports = (autocodeRoutes) => {
   // parse urlencoded request body
   app.use(express.urlencoded({ extended: true }));
 
-  // set cors blocked resources
-  app.use(cors());
-  app.options("*", cors());
+  // Configure CORS
+  const corsOptions = {
+    origin: ["https://app.dragsense.com", "https://.dragsense.com"], // Allow multiple origins
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: [
+      "Content-Type",
+      "x-api-key",
+      "ngrok-skip-browser-warning",
+    ],
+    credentials: true, // Allow cookies to be sent with the requests if needed
+  };
 
+  // Apply CORS middleware once with proper options
+  app.use(cors(corsOptions));
+
+  // Enable pre-flight requests for all routes
+  app.options("*", cors(corsOptions));
+
+  app.use('/static', express.static('static', {
+    setHeaders: function (res, path) {
+      res.set('Access-Control-Allow-Origin', '*'); // Allow all origins or specific ones
+    }
+  }));
+  // API routes
   app.use("/api", apiRoutes);
-  // api routes
   app.use(AutoCodeConfig.AUTOCODE_API_PREFIX, autocodeRoutes);
 
-  // convert error to ApiError, if needed
+  // Convert error to ApiError, if needed
   app.use(errorConverter);
 
-  // handle error
+  // Handle error
   app.use(errorHandler);
 
   app.listen(AppConfig.PORT);
