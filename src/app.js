@@ -39,6 +39,9 @@ async function initApp() {
     `<script src="/${scriptFilename}"></script>`
   );
 
+  
+  app.listen(port);
+
   return port;
 }
 

@@ -54,7 +54,6 @@ app.use(helmet({
   // handle error
   app.use(errorHandler);
 
-  app.listen(AppConfig.PORT);
 
   return { app, port: AppConfig.PORT };
 };

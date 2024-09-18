@@ -1,2 +1,24 @@
 {
+    "webTitle": "Nodejs Demo Website",
+    "tagLine": "Nodejs Demo Website",
+    "desc": "Nodejs Demo Website",
+    "lang": "",
+    "author": "",
+    "keywords": "",
+    "images": {},
+    "email": {
+        "host": "",
+        "port": "",
+        "secure": false,
+        "ignoreTLS": true,
+        "auth": {
+            "user": "",
+            "pass": ""
+        }
+    },
+    "scripts": {
+        "head": "",
+        "footer": ""
+    },
+    "_id": "66e47b5a62a8a881aabf9b3d"
 }
